@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Principal;
-import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.http.HttpSession;
@@ -18,7 +17,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -212,18 +210,104 @@ public class UserController {
 	// Delete Contact Handler
 	
 	@GetMapping("/delete/{cid}")
-	public String deleteContact(@PathVariable("cid") Integer cId, Model model, HttpSession session)
+	public String deleteContact(@PathVariable("cid") Integer cId, Model model,Principal principal, HttpSession session)
 	{
 		 Contact contact = this.contactRepository.findById(cId).get();
 		
 		
-		contact.setUser(null);
-		
-		this.contactRepository.delete(contact);
+		//		contact.setUser(null);
+		//		
+		//		this.contactRepository.delete(contact);
+		 
+		 User user = this.userRepository.getUserByUserName(principal.getName());
+		 
+		 user.getContacts().remove(contact);
+		 
+		 this.userRepository.save(user);
+		 
+		 
 		session.setAttribute("message", new Message("Contact Deleted Succesfully....", "success"));
 			
 	
 		
 		return "redirect:/user/show-contacts/0";
+	}
+	
+	
+	// Open Update 	Form Handler
+	
+	@PostMapping("/update-contact/{cid}")
+	public String updateForm(@PathVariable("cid") Integer cId, Model model)
+	{
+		
+		model.addAttribute("title", "Update Contact");
+		
+		Contact contact = this.contactRepository.findById(cId).get();
+		
+		model.addAttribute("contact", contact);
+		
+		return "normal/update_form";
+	}
+	
+	
+	
+	// Update Contact Handler
+	
+	@PostMapping("/process-update")
+	public String updateHandler(@ModelAttribute Contact contact, 
+			@RequestParam("profileImage") MultipartFile file,
+			Model model, HttpSession session, Principal principal)
+	{
+		try {
+			// Old Contact Details
+			
+			Contact oldcontactDetail = this.contactRepository.findById(contact.getcId()).get();
+			
+			//Image
+			
+			if(!file.isEmpty())
+			{
+				//file work
+				
+				//Rewrite
+				
+				// Delete Old Photo
+				
+				File deleteFile = new ClassPathResource("static/image").getFile();
+				File file1 = new File(deleteFile, oldcontactDetail.getImage());
+				file1.delete();
+				
+				
+				
+				// Update New Photo
+				
+				
+				File saveFile = new ClassPathResource("static/image").getFile();
+				
+				Path path = Paths.get(saveFile.getAbsolutePath()+File.separator+file.getOriginalFilename());
+				
+				Files.copy(file.getInputStream(),path , StandardCopyOption.REPLACE_EXISTING);
+				
+				contact.setImage(file.getOriginalFilename());
+				
+			}else
+			{
+				contact.setImage(oldcontactDetail.getImage());
+			}
+			
+			User user= this.userRepository.getUserByUserName(principal.getName());
+			
+			contact.setUser(user);
+			
+			this.contactRepository.save(contact);
+			
+			session.setAttribute("message", new Message("Your Contact Is Updated...", "success"));
+			
+			
+		} catch (Exception e) {
+			
+		}
+		
+		return "redirect:/user/"+contact.getcId()+"/contact";
 	}
 }
