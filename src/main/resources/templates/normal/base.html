@@ -57,7 +57,7 @@
 
 
 				<li class="nav-item"><a class="nav-link "
-					th:href="@{</logout>}" href="#" tabindex="-1"
+					th:href="@{/logout}" href="#" tabindex="-1"
 					aria-disabled="true">Logout</a></li>
 
 			</ul>
@@ -77,11 +77,17 @@
 		<span onclick="toggleSidebar()" class="crossBtn">&times;</span>
 
 		<a href="#" th:href="@{/user/index}"class="item"><i class="fas fa-home"></i> Home</a> 
+		
 		<a href="#" th:href="@{/user/show-contacts/0}" class="item"><i class="fas fa-id-card-alt"></i> View Contact</a> 
+		
 		<a href="#" th:href="@{/user/add-contact}" class="item"><i class="fas fa-pen-square"></i> Add Contact</a> 
-		<a href="#" class="item"><i class="fas fa-user-alt"></i> Your Profile</a> 
+		
+		<a href="#" th:href="@{/user/profile}" class="item"><i class="fas fa-user-alt"></i> Your Profile</a> 
+		
 		<a href="#" class="item"><i class="fas fa-cogs"></i> Settings</a> 
+		
 		<a href="#" th:href="@{/logout}" class="item"><i class="fas fa-sign-out-alt"></i> Logout</a>
+		
 		<div class="divider"></div>		
 			
 	</div>
